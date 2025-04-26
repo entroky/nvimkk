@@ -1,9 +1,7 @@
 return {
-	"forester.nvim",
-	dir = "~/.config/nvim/lua/local/forester.nvim/",
-	dev = true,
-	lazy = false,
-	dependencies = {
+	"phijor/forester.nvim",
+    	branch = "completion-enhancements",
+	requires = {
 		{ "nvim-telescope/telescope.nvim" },
 		{ "nvim-treesitter/nvim-treesitter" },
 		{ "nvim-lua/plenary.nvim" },
@@ -18,22 +16,28 @@ return {
 	-- -- maybe could be even lazier with these, but not working, because `forester` filetype is not registered yet
 	-- ft = "tree",
 	-- ft = "forester",
+	"nvim-treesitter/nvim-treesitter",
 	config = function()
-		-- can't run this because it treesitter might not be initialized
-		-- vim.cmd.TSInstall "toml"
+	local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+            parser_config.forester = {
+                install_info = {
+                    url = "~/tree-sitter-forester",
+                    files = { "src/parser.c" },
+                    branch = "main",
+                    generate_requires_npm = false,
+                    requires_generate_from_grammar = false,
+                },
+                filetype = "tree",
+            }
 
-		-- this ensures that the treesitter is initialized, and toml is installed
-		local configs = require("nvim-treesitter.configs")
+            require("nvim-treesitter.configs").setup({
+                highlight = {
+                    enable = true,
+                    additional_vim_regex_highlighting = false,
+                },
 
-		-- this ensures forester is initialized, makeing `forester` tree-sitter available
-		require("forester").setup()
-
-		-- installs the forester tree-sitter, so the syntax highlighting is available
-		configs.setup({
-			ensure_installed = { "toml", "forester" },
-			sync_install = true,
-		})
-
+                ensure_installed = { "forester" },
+            })
 		vim.api.nvim_create_autocmd("BufWritePre", {
 			pattern = "*.tree", -- Change this to match your desired file type or file pattern
 			callback = function()
